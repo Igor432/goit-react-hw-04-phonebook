@@ -5,7 +5,10 @@ import { nanoid } from 'nanoid';
 import style from './phonebook/phonebook.module.css';
 import Notiflix from 'notiflix';
 import { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
+import { createContext, useContext } from 'react';
+
+export const useMyContext = () => useContext(MyContext);
+const MyContext = createContext();
 
 function App() {
   const [contacts, setContacts] = useState(
@@ -17,33 +20,27 @@ function App() {
     e.preventDefault();
     const name = e.target.name.value;
     const numberVal = e.target.number.value;
-    const allName = [];
 
-    contacts.forEach(contact => {
-      allName.push(contact.name);
-    });
-
-    if (allName.includes(name)) {
-      Notiflix.Notify.failure('The name already exists!');
-    } else {
-      setContacts(state => [
-        ...state,
-        { id: nanoid(), name: name, number: numberVal },
-      ]);
-      e.target.reset();
+    const result = contacts.find(contact => contact.name === name);
+    if (result) {
+      return Notiflix.Notify.failure('The name already exists!');
     }
+
+    setContacts(state => [
+      ...state,
+      { id: nanoid(), name: name, number: numberVal },
+    ]);
+    e.target.reset();
   };
 
   const onFilter = e => {
     const filterValue = e.target.value;
-
     setFilter(filterValue);
   };
 
   const onDelete = e => {
     const target = e.target;
-    const newContacts = contacts.filter(contact => contact.id !== target.id);
-    setContacts(newContacts);
+    setContacts(contacts.filter(contact => contact.id !== target.id));
   };
 
   useEffect(() => {
@@ -52,34 +49,19 @@ function App() {
   }, [contacts]);
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontSize: 40,
-        color: '#010101',
-      }}
-    >
+    <div className={style.App}>
       <h1 className={style.title_tag}>Phonebook</h1>
+
       <ContactForm onSubmit={onSubmit} />
 
       <h2 className={style.title_tag}>Contacts</h2>
 
-      <Filter onFilter={onFilter} contacts={contacts} />
-      <ContactList
-        Contacts={contacts}
-        filterValue={filter}
-        onDelete={onDelete}
-      />
+      <Filter onFilter={onFilter} />
+      <MyContext.Provider value={onDelete}>
+        <ContactList contacts={contacts} filterValue={filter} />
+      </MyContext.Provider>
     </div>
   );
 }
-
-App.propTypes = {
-  contacts: PropTypes.array,
-  filter: PropTypes.string,
-};
 
 export default App;
