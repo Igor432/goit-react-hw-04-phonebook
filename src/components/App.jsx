@@ -11,9 +11,13 @@ export const useMyContext = () => useContext(MyContext);
 const MyContext = createContext();
 
 function App() {
+
+const contactList = JSON.parse(localStorage.getItem('contacts'))
+
+
   const [contacts, setContacts] = useState(
-    JSON.parse(localStorage.getItem('contacts'))
-  );
+   contactList ? JSON.parse(localStorage.getItem('contacts')) : []
+  )
   const [filter, setFilter] = useState('');
 
   const onSubmit = e => {
@@ -40,7 +44,7 @@ function App() {
 
   const onDelete = e => {
     const target = e.target;
-    setContacts(contacts.filter(contact => contact.id !== target.id));
+    setContacts(prev => (prev.filter(contact => contact.id !== target.id)));
   };
 
   useEffect(() => {
