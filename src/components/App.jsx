@@ -1,7 +1,6 @@
 import Filter from './phonebook/Filter';
 import ContactList from './phonebook/ContactList';
 import ContactForm from '../components/phonebook/ContactForm';
-import { nanoid } from 'nanoid';
 import style from './phonebook/phonebook.module.css';
 import Notiflix from 'notiflix';
 import { useEffect, useState } from 'react';
@@ -11,30 +10,20 @@ export const useMyContext = () => useContext(MyContext);
 const MyContext = createContext();
 
 function App() {
-
-const contactList = JSON.parse(localStorage.getItem('contacts'))
-
+  const contactList = JSON.parse(localStorage.getItem('contacts'));
 
   const [contacts, setContacts] = useState(
-   contactList ? JSON.parse(localStorage.getItem('contacts')) : []
-  )
+    contactList ? JSON.parse(localStorage.getItem('contacts')) : []
+  );
   const [filter, setFilter] = useState('');
 
-  const onSubmit = e => {
-    e.preventDefault();
-    const name = e.target.name.value;
-    const numberVal = e.target.number.value;
-
-    const result = contacts.find(contact => contact.name === name);
+  const onSubmit = contactItem => {
+    const result = contacts.find(contact => contact.name === contactItem.name);
     if (result) {
       return Notiflix.Notify.failure('The name already exists!');
     }
 
-    setContacts(state => [
-      ...state,
-      { id: nanoid(), name: name, number: numberVal },
-    ]);
-    e.target.reset();
+    setContacts(state => [...state, contactItem]);
   };
 
   const onFilter = e => {
@@ -44,7 +33,7 @@ const contactList = JSON.parse(localStorage.getItem('contacts'))
 
   const onDelete = e => {
     const target = e.target;
-    setContacts(prev => (prev.filter(contact => contact.id !== target.id)));
+    setContacts(prev => prev.filter(contact => contact.id !== target.id));
   };
 
   useEffect(() => {
@@ -55,13 +44,13 @@ const contactList = JSON.parse(localStorage.getItem('contacts'))
   return (
     <div className={style.App}>
       <h1 className={style.title_tag}>Phonebook</h1>
-
-      <ContactForm onSubmit={onSubmit} />
-
-      <h2 className={style.title_tag}>Contacts</h2>
-
-      <Filter onFilter={onFilter} />
       <MyContext.Provider value={onDelete}>
+        <ContactForm onSubmit={onSubmit} />
+
+        <h2 className={style.title_tag}>Contacts</h2>
+
+        <Filter onFilter={onFilter} />
+
         <ContactList contacts={contacts} filterValue={filter} />
       </MyContext.Provider>
     </div>
